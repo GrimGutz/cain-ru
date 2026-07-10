@@ -1,0 +1,53 @@
+{
+  "id": "cain-ru",
+  "title": "CAIN | Русский перевод",
+  "description": "<p>Русификатор системы CAIN для Foundry VTT: интерфейс, листы, подсказки и переводы библиотек через Babele.</p>",
+  "authors": [
+    {
+      "name": "Local CAIN RU"
+    }
+  ],
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "14",
+    "maximum": "14"
+  },
+  "esmodules": [
+    "scripts/cain-ru.mjs"
+  ],
+  "languages": [
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json",
+      "system": "cain"
+    }
+  ],
+  "relationships": {
+    "recommends": [
+      {
+        "id": "ru-ru",
+        "type": "module"
+      },
+      {
+        "id": "babele",
+        "type": "module"
+      }
+    ]
+  },
+  "flags": {
+    "hotReload": {
+      "enabled": true,
+      "extensions": [
+        "json",
+        "mjs"
+      ],
+      "paths": [
+        "lang/**/*.json",
+        "scripts/**/*.mjs",
+        "compendium/**/*.json"
+      ]
+    }
+  }
+}

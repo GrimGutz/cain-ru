@@ -1,0 +1,9 @@
+{
+  "label": "Противники и скитальцы",
+  "mapping": {
+    "name": "name",
+    "description": "system.description"
+  },
+  "folders": {},
+  "entries": {}
+}
