@@ -44,7 +44,7 @@
     "Temperance": "Умеренность",
     "Departed": "Ушедший",
     "Cradle": "Колыбель",
-    "Centipede": "Сороконожка",
+    "Centipede": "Сколопендра",
     "Temporal Instability": "Временная нестабильность",
     "Departed Abilities": "Способности: Ушедший",
     "Firebug Tasks": "Задачи: Поджигатель",
@@ -56,7 +56,7 @@
     "Songbird Abilities": "Способности: Певчая птица",
     "Shadow Abilities": "Способности: Тень",
     "Idol": "Идол",
-    "Lord": "Владыка",
+    "Lord": "Лорд",
     "Machine": "Машина",
     "Loner Tasks": "Задачи: Одиночка",
     "Firebug": "Поджигатель",
@@ -94,8 +94,8 @@
       "agendaName": "Певчая птица"
     },
     "Obey the Lord": {
-      "name": "Подчиняйся Владыке",
-      "task": "Подчиняйся Владыке"
+      "name": "Подчиняйся Лорду",
+      "task": "Подчиняйся Лорду"
     },
     "Red Muscle": {
       "name": "Красная мускулатура",
