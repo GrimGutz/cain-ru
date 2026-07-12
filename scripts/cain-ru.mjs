@@ -90,7 +90,7 @@ const SKILL_TRANSLATIONS = {
   negotiation: "Переговоры",
   authority: "Авторитет",
   connection: "Связь",
-  psyche: "Психика"
+  psyche: "Псионика"
 };
 
 const TEXT_TRANSLATIONS = {
@@ -153,15 +153,15 @@ const TEXT_TRANSLATIONS = {
   "Examples:": "Примеры:",
   "Create Blasphemy": "Создать богохульство",
   "Add Power": "Добавить силу",
-  "Psyche Burst:": "Всплеск психики:",
+  "Psyche Burst:": "Психический всплеск:",
   "Uses": "Использует",
   "No-Cost Mode": "Режим без затрат",
   "Multiple": "Несколько",
   "Create Standalone Power": "Создать отдельную силу",
   "Power Name": "Название силы",
   "Is Passive Power": "Пассивная сила",
-  "Psyche Burst Options": "Параметры всплеска психики",
-  "Uses Psyche Burst": "Тратит всплеск психики",
+  "Psyche Burst Options": "Параметры психического всплеска",
+  "Uses Psyche Burst": "Тратит психический всплеск",
   "Has No-Psyche Mode": "Есть режим без психики",
   "Can Use Multiple Bursts": "Можно тратить несколько всплесков",
   "Keywords": "Ключевые слова",
@@ -186,10 +186,10 @@ const TEXT_TRANSLATIONS = {
   "Level 1 - 1 Mission Survived": "Уровень 1 - 1 пережитая миссия",
   "Level 2 - 2 Missions Survived": "Уровень 2 - 2 пережитые миссии",
   "Level 3 - 3 Missions Survived (Max)": "Уровень 3 - 3 пережитые миссии (макс.)",
-  "Psyche Burst Requirements": "Требования всплеска психики",
-  "Requires Psyche Burst": "Требует всплеск психики",
-  "Psyche Burst Cost": "Цена во всплесках психики",
-  "Set to 0 for \"all remaining Psyche Bursts (minimum 1)\"": "Поставьте 0 для «все оставшиеся всплески психики (минимум 1)».",
+  "Psyche Burst Requirements": "Требования психического всплеска",
+  "Requires Psyche Burst": "Требует психический всплеск",
+  "Psyche Burst Cost": "Цена в психических всплесках",
+  "Set to 0 for \"all remaining Psyche Bursts (minimum 1)\"": "Поставьте 0 для «все оставшиеся психические всплески (минимум 1)».",
   "Create Bond Ability": "Создать способность узы",
   "Create Affliction": "Создать поражение",
   "Affliction Name": "Название поражения",
@@ -247,17 +247,17 @@ const TEXT_TRANSLATIONS = {
   "Successes on a 6": "Успехи только на 6",
   "Teamwork (Combine highest bonuses)": "Командная работа (объедините лучшие бонусы)",
   "Setup yourself or another: (+1D, -risk, or -hard)": "Подготовить себя или другого: (+1D, -риск или -сложность)",
-  "Spend 1 psyche burst to use your powers (+1D)": "Потратьте 1 всплеск психики, чтобы использовать силы (+1D)",
+  "Spend 1 psyche burst to use your powers (+1D)": "Потратьте 1 психический всплеск, чтобы использовать силы (+1D)",
   "Use your abilities": "Используйте способности",
   "Bargain with the Admin (Gain a hook or tradeoff)": "Торгуйтесь с Админом (получите зацепку или компромисс)",
   "Sin Overflow": "Переполнение греха",
   "Roll Sin Marks": "Бросить метки греха",
   "Clear Sin Marks": "Очистить метки греха",
   "EVOLVE": "ЭВОЛЮЦИЯ",
-  "Psyche Burst Charges": "Заряды всплеска психики",
-  "No Psyche Burst Data": "Нет данных всплеска психики",
-  "Using any blasphemy power requires a psyche burst. Some can spend multiple for extra benefit.": "Любая сила богохульства требует всплеск психики. Некоторые силы могут тратить несколько всплесков ради дополнительного эффекта.",
-  "You always start a mission with three psyche bursts.": "Вы всегда начинаете миссию с тремя всплесками психики.",
+  "Psyche Burst Charges": "Заряды психического всплеска",
+  "No Psyche Burst Data": "Нет данных психического всплеска",
+  "Using any blasphemy power requires a psyche burst. Some can spend multiple for extra benefit.": "Любая сила богохульства требует психический всплеск. Некоторые силы могут тратить несколько всплесков ради дополнительного эффекта.",
+  "You always start a mission with three psyche bursts.": "Вы всегда начинаете миссию с тремя психическими всплесками.",
   "Drag or search for agenda to add to your sheet.": "Перетащите или найдите повестку, чтобы добавить ее на лист.",
   "Click \"Add Task\" button below to add custom tasks, or tasks will auto-populate when you add an agenda.": "Нажмите «Добавить задачу», чтобы добавить свою задачу; задачи также заполнятся автоматически при добавлении повестки.",
   "Select abilities from the dropdown below, or they will auto-populate when you add an agenda.": "Выберите способности в списке ниже; они также заполнятся автоматически при добавлении повестки.",
@@ -351,9 +351,9 @@ const TEXT_TRANSLATIONS = {
   "Link Tension Talisman": "Связать талисман напряжения",
   "Link Pressure Talisman": "Связать талисман давления",
   "Link": "Связать",
-  "Psyche Roll": "Бросок психики",
-  "Psyche": "Психика",
-  "Use Psyche Burst": "Использовать всплеск психики",
+  "Psyche Roll": "Бросок Псионики",
+  "Psyche": "Псионика",
+  "Use Psyche Burst": "Использовать психический всплеск",
   "Use Burst": "Использовать всплеск",
   "Print Questions": "Вывести вопросы",
   "Severe Attack Roll": "Бросок тяжелой атаки",
@@ -407,10 +407,10 @@ const TEXT_TRANSLATIONS = {
   "End Session XP": "Опыт за конец сессии",
   "Rest Dice Modifier": "Модификатор кубов отдыха",
   "Roll Rest Dice": "Бросить кубы отдыха",
-  "Roll Psyche": "Бросок психики",
-  "Roll Psyche (N/A)": "Бросок психики (н/д)",
+  "Roll Psyche": "Бросок Псионики",
+  "Roll Psyche (N/A)": "Бросок Псионики (н/д)",
   "Roll your psyche dice": "Бросить кубы психики",
-  "You can always spend a psyche burst to add +1 advantage die to any roll (yours or an ally’s) by using your blasphemies in a creative way.": "Вы всегда можете потратить всплеск психики, чтобы добавить +1 куб преимущества к любому броску своему или союзника, творчески используя свои богохульства.",
+  "You can always spend a psyche burst to add +1 advantage die to any roll (yours or an ally’s) by using your blasphemies in a creative way.": "Вы всегда можете потратить психический всплеск, чтобы добавить +1 куб преимущества к любому броску своему или союзника, творчески используя свои богохульства.",
   "You can recover them by resting during a hunt (see pg. 38) or through the uses of abilities.": "Вы можете восстановить их отдыхом во время охоты или применением способностей.",
   "You can always use psyche for minor effects such as:": "Психику всегда можно использовать для малых эффектов, например:",
   "producing a faint light or aura around something or someone": "создать слабый свет или ауру вокруг предмета или существа",
@@ -431,20 +431,20 @@ const TEXT_TRANSLATIONS = {
   "Toggle Animation": "Переключить анимацию",
   "Edit this character's copy": "Редактировать копию этого персонажа",
   "Has no-psyche mode": "Есть режим без психики",
-  "Uses psyche burst": "Тратит всплеск психики",
+  "Uses psyche burst": "Тратит психический всплеск",
   "Can use multiple bursts": "Можно тратить несколько всплесков",
   "No Psyche": "Без психики",
   "Uses Psyche": "Тратит психику",
-  "Plus Psyche": "Доп. психика",
+  "Plus Psyche": "Доп. псионика",
   "Pick a virtue to bond with at the start of a mission. Surviving missions increases your bond level (max 3). Bond benefits are permanent even when not actively bonding.": "Выберите добродетель для узы в начале миссии. Пережитые миссии повышают уровень узы (макс. 3). Преимущества узы постоянны, даже когда вы не поддерживаете ее активно.",
   "Virtue:": "Добродетель:",
   "Bond Level:": "Уровень узы:",
   "Strictures:": "Запреты:",
   "Lvl": "Ур.",
   "Permanent": "Постоянная",
-  "Requires all remaining Psyche Bursts (min 1)": "Требует все оставшиеся всплески психики (мин. 1)",
-  "Psyche Burst(s)": "всплеск(ов) психики",
-  "Spend Psyche Burst": "Потратить всплеск психики",
+  "Requires all remaining Psyche Bursts (min 1)": "Требует все оставшиеся психические всплески (мин. 1)",
+  "Psyche Burst(s)": "психический всплеск",
+  "Spend Psyche Burst": "Потратить психический всплеск",
   "View Full Bond": "Открыть полную узу",
   "No bonds assigned. Drag a Bond item here to add one.": "Узы не назначены. Перетащите предмет узы сюда, чтобы добавить.",
   "A sin mark is a physical manifestation of wild power overflow on your body, evidence of your partial transformation into a sin. You can find a list of sin marks, their effects, and their table, on pg. 86. A sin mark is a new, permanent part of your character. It grants new, beneficial power, and grants you new abilities.": "Метка греха - физическое проявление неконтролируемого переполнения силы на вашем теле, признак частичного превращения в грех. Метка греха становится новой постоянной частью персонажа, дает полезную силу и новые способности.",
@@ -462,7 +462,7 @@ const TEXT_TRANSLATIONS = {
   "None": "Нет",
   "Additional Dice:": "Дополнительные кубы:",
   "Hard Roll (only 6's count as success):": "Сложный бросок (успех только на 6):",
-  "No Psyche Burst charges available!": "Нет доступных зарядов всплеска психики!",
+  "No Psyche Burst charges available!": "Нет доступных зарядов психического всплеска!",
   "-- Select a Power --": "-- Выберите силу --",
   "-- Select Common Use --": "-- Выберите обычное применение --",
   "No Cost Mode": "Режим без затрат",
@@ -478,8 +478,8 @@ const TEXT_TRANSLATIONS = {
   "Common Psyche Uses:": "Обычное применение психики:",
   "Or Custom Use:": "Или свое применение:",
   "Number of Bursts to Use:": "Количество всплесков:",
-  "Available Psyche Bursts:": "Доступные всплески психики:",
-  "Psyche Burst Used": "Всплеск психики использован",
+  "Available Psyche Bursts:": "Доступные психические всплески:",
+  "Psyche Burst Used": "Психический всплеск использован",
   "Use:": "Применение:",
   "Description:": "Описание:",
   "Please select a power, common use, or enter a custom use!": "Выберите силу, обычное применение или введите свое применение!",
@@ -496,8 +496,8 @@ const TEXT_TRANSLATIONS = {
   "Kit and Items": "Снаряжение и предметы",
   "Sin": "Грех",
   "SIN": "ГРЕХ",
-  "Psyche": "Психика",
-  "Use Psyche Burst": "Потратить всплеск психики",
+  "Psyche": "Псионика",
+  "Use Psyche Burst": "Потратить психический всплеск",
   "Available Abilities": "Доступные способности",
   "Available Abilities:": "Доступные способности:",
   "Available Powers": "Доступные силы",
@@ -514,7 +514,7 @@ const TEXT_TRANSLATIONS = {
   "Bond Level": "Уровень узы",
   "Virtue": "Добродетель",
   "Current Marks": "Текущие метки",
-  "Roll Psyche (d6)": "Бросок психики (d6)",
+  "Roll Psyche (d6)": "Бросок Псионики (d6)",
   "You can always use psyche for minor effects such as": "Психику всегда можно использовать для малых эффектов, например",
   "Type:": "Тип:",
   "Form:": "Форма:",
@@ -727,10 +727,10 @@ function normalizeText(value) {
 
 function translateDynamic(value) {
   const rollPsyche = value.match(/^Roll Psyche \((.+)\)$/);
-  if (rollPsyche) return `Бросок психики (${rollPsyche[1]})`;
+  if (rollPsyche) return `Бросок Псионики (${rollPsyche[1]})`;
 
   const psycheCost = value.match(/^Requires (.+) Psyche Burst\(s\)$/);
-  if (psycheCost) return `Требует ${psycheCost[1]} всплеск(ов) психики`;
+  if (psycheCost) return `Требует психических всплесков: ${psycheCost[1]}`;
 
   const currentMarks = value.match(/^Current Marks: (.+)$/);
   if (currentMarks) return `Текущие метки: ${currentMarks[1]}`;
@@ -748,10 +748,10 @@ function translateDynamic(value) {
   if (alreadyAdded) return `${alreadyAdded[1]} уже добавлено этому персонажу`;
 
   const notEnoughBursts = value.match(/^Not enough Psyche Bursts! You only have (.+)\.$/);
-  if (notEnoughBursts) return `Недостаточно всплесков психики. Доступно только ${notEnoughBursts[1]}.`;
+  if (notEnoughBursts) return `Недостаточно психических всплесков. Доступно только ${notEnoughBursts[1]}.`;
 
   const usedBurst = value.match(/^Used (.+) Psyche Bursts? for (.+)$/);
-  if (usedBurst) return `Потрачено всплесков психики: ${usedBurst[1]} на ${usedBurst[2]}`;
+  if (usedBurst) return `Потрачено психических всплесков: ${usedBurst[1]} на ${usedBurst[2]}`;
 
   const rolledSinMark = value.match(/^Rolled Sin Mark: (.+) with ability: (.+)$/);
   if (rolledSinMark) return `Бросок метки греха: ${rolledSinMark[1]}, способность: ${rolledSinMark[2]}`;
