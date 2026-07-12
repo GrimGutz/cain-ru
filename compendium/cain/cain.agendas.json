@@ -19,7 +19,7 @@
     "Cradle Abilities": "Способности: Колыбель",
     "Guardian Tasks": "Задачи: Защитник",
     "Ogre": "Огр",
-    "Moth Tasks": "Задачи: Мотылек",
+    "Moth Tasks": "Задачи: Мотылёк",
     "Survivor": "Выживший",
     "Shadow": "Тень",
     "Beast Tasks": "Задачи: Зверь",
@@ -27,17 +27,17 @@
     "Guardian Abilities": "Способности: Защитник",
     "Misc Tasks": "Прочие задачи",
     "Sorcerer Abilities": "Способности: Колдун",
-    "Hardline": "Жесткая линия",
+    "Hardline": "Бескомпромиссный",
     "Temperance Abilities": "Способности: Умеренность",
-    "Hardline Tasks": "Задачи: Жесткая линия",
+    "Hardline Tasks": "Задачи: Бескомпромиссный",
     "Broken": "Сломленный",
     "Demon": "Демон",
-    "Hardline Abilities": "Способности: Жесткая линия",
-    "Doomed Abilities": "Способности: Обреченный",
+    "Hardline Abilities": "Способности: Бескомпромиссный",
+    "Doomed Abilities": "Способности: Обречённый",
     "Demon Abilities": "Способности: Демон",
     "Beast Abilities": "Способности: Зверь",
     "Sorcerer": "Колдун",
-    "Doomed": "Обреченный",
+    "Doomed": "Обречённый",
     "Toad": "Жаба",
     "Temperence Tasks": "Задачи Умеренности",
     "Loner": "Одиночка",
@@ -62,15 +62,15 @@
     "Firebug": "Поджигатель",
     "Songbird Tasks": "Задачи: Певчая птица",
     "Torch Tasks": "Задачи: Факел",
-    "Doomed Tasks": "Задачи: Обреченный",
+    "Doomed Tasks": "Задачи: Обречённый",
     "Torch Abilities": "Способности: Факел",
     "Songbird": "Певчая птица",
     "Doll": "Кукла",
-    "Moth Abilities": "Способности: Мотылек",
+    "Moth Abilities": "Способности: Мотылёк",
     "Firebug Abilities": "Способности: Поджигатель",
     "Broken Abilities": "Способности: Сломленный",
     "Cradle Tasks": "Задачи: Колыбель",
-    "Moth": "Мотылек",
+    "Moth": "Мотылёк",
     "Doll Abilities": "Способности: Кукла",
     "Guardian": "Защитник",
     "Hound": "Гончая",
@@ -201,8 +201,8 @@
       "agendaName": "Факел"
     },
     "Doomed": {
-      "name": "Обреченный",
-      "agendaName": "Обреченный"
+      "name": "Обречённый",
+      "agendaName": "Обречённый"
     },
     "Die": {
       "name": "Умереть",
@@ -223,8 +223,8 @@
       "task": "Сдерживайся"
     },
     "Hardline": {
-      "name": "Жесткая линия",
-      "agendaName": "Жесткая линия"
+      "name": "Бескомпромиссный",
+      "agendaName": "Бескомпромиссный"
     },
     "Cradle": {
       "name": "Колыбель",
@@ -235,8 +235,8 @@
       "agendaName": "Кукла"
     },
     "Moth": {
-      "name": "Мотылек",
-      "agendaName": "Мотылек"
+      "name": "Мотылёк",
+      "agendaName": "Мотылёк"
     },
     "Black Suit": {
       "name": "Черный костюм",
