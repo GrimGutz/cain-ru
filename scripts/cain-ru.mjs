@@ -1,3 +1,5 @@
+import { UI_TRANSLATIONS, translateUiPattern } from "./ui-translations.mjs";
+
 const MODULE_ID = "cain-ru";
 const SYSTEM_ID = "cain";
 
@@ -16,7 +18,10 @@ const TRANSLATION_PACK_FILES = [
   "cain.items.json",
   "cain.recreation.json",
   "cain.sin-marks.json",
-  "cain.virtues.json"
+  "cain.virtues.json",
+  "cain.tables.json",
+  "cain.lore.json",
+  "cain.opponents.json"
 ];
 
 const LANGUAGE_PATH = `modules/${MODULE_ID}/lang/ru.json`;
@@ -74,7 +79,15 @@ const translationState = {
   loadPromise: null,
   byOriginalName: new Map(),
   byTranslatedName: new Map(),
-  byPackName: new Map()
+  byPackName: new Map(),
+  folders: new Map()
+};
+
+let originalData = { packs: {}, sins: {} };
+
+const DOMAIN_NAME_ALIASES = {
+  "Keeper of the Ludic Menagerie": "The Keeper of the Ludic Menagerie",
+  "The Fattening of Rage": "The Fatttening of Rate"
 };
 
 let itemTranslationHooksInstalled = false;
@@ -456,7 +469,7 @@ const TEXT_TRANSLATIONS = {
   "Requires": "Требует",
   "Remove": "Удалить",
   "Use": "Использовать",
-  "Quirk — an optional alternate/additive passive from Games for Freaks": "Особенность - необязательная альтернативная/добавочная пассивная сила из Games for Freaks",
+  "Quirk — an optional alternate/additive passive from Games for Freaks": "Особенность - альтернативная или дополнительная пассивная сила из «Игр для уродов»",
   "No more available Abilites": "Больше нет доступных способностей",
   "There are no more selectable powers.": "Больше нет доступных сил для выбора.",
   "None": "Нет",
@@ -623,7 +636,7 @@ const TEXT_TRANSLATIONS = {
   "Roll Reaction": "Бросить реакцию",
   "Apply Affliction": "Применить недуг",
   "Source:": "Источник:",
-  "Core p.XX, Games for Freaks p.XX": "Основная книга, стр. XX; Games for Freaks, стр. XX",
+  "Core p.XX, Games for Freaks p.XX": "Основная книга, стр. XX; «Игры для уродов», стр. XX",
   "+ Add tag": "+ Добавить тег",
   "Description...": "Описание...",
   "Choose an Exorcist to Attack:": "Выберите экзорциста для атаки:",
@@ -681,7 +694,7 @@ const ATTRIBUTE_TRANSLATIONS = {
   "Ability description (use {<CAT> type modifier} for CAT formatting)...": "Описание способности (используйте {<CAT> type modifier} для форматирования CAT)...",
   "Enter stricture (e.g., 'Never lie', 'Always help the innocent')...": "Введите запрет (например, «Никогда не лги», «Всегда помогай невинным»)...",
   "Right click to clear": "ПКМ: очистить",
-  "Quirk - an optional alternate/additive passive from Games for Freaks": "Особенность - необязательная альтернативная/добавочная пассивная сила из Games for Freaks"
+  "Quirk - an optional alternate/additive passive from Games for Freaks": "Особенность - альтернативная или дополнительная пассивная сила из «Игр для уродов»"
 };
 
 const SIN_DOSSIER_TRANSLATIONS = {
@@ -1298,7 +1311,10 @@ function translateText(value) {
   if (!normalized) return value;
   return TEXT_TRANSLATIONS[normalized]
     ?? ATTRIBUTE_TRANSLATIONS[normalized]
+    ?? UI_TRANSLATIONS[normalized]
+    ?? SKILL_TRANSLATIONS[normalized.toLowerCase()]
     ?? translateDynamic(normalized)
+    ?? translateUiPattern(normalized)
     ?? value;
 }
 
@@ -1307,7 +1323,8 @@ function replaceTextNode(node) {
   const trimmed = normalizeText(original);
   if (!trimmed) return;
 
-  const translated = translateText(trimmed);
+  const folderContext = node.parentElement?.closest("select[id*='folder'], .folder-name, .folder-header h3, #export-folders-list");
+  const translated = (folderContext && translationState.folders.get(normalizeLookup(trimmed))) || translateText(trimmed);
   if (translated === trimmed || translated === original) return;
 
   const leading = original.match(/^\s*/)?.[0] ?? "";
@@ -1317,11 +1334,22 @@ function replaceTextNode(node) {
 
 function shouldSkipElement(element) {
   if (!element?.closest) return false;
-  return Boolean(element.closest("script, style, code, pre, kbd, samp, textarea, [contenteditable='true']"));
+  return Boolean(element.closest("script, style, code, pre, kbd, samp, textarea, [contenteditable='true'], .editor-content, .journal-page-content, .ability-description, .affliction-description"));
+}
+
+function translateStructuredText(element) {
+  const session = element.matches?.(".session-end-form") ? element : element.querySelector?.(".session-end-form");
+  if (!session) return;
+  for (const label of session.querySelectorAll("label[for='survival']")) {
+    const bold = label.querySelector("b");
+    for (const node of label.childNodes) if (node.nodeType === Node.TEXT_NODE && /Did you/.test(node.nodeValue)) node.nodeValue = "Вы ";
+    if (bold?.textContent === "survive") bold.textContent = "выжили";
+  }
 }
 
 function translateAttributes(element) {
   if (!element?.getAttribute) return;
+  if (element.closest?.("script, style, code, pre, kbd, samp")) return;
   for (const attr of ["placeholder", "title", "aria-label", "data-tooltip", "data-label", "alt"]) {
     const value = element.getAttribute(attr);
     if (!value) continue;
@@ -1341,12 +1369,12 @@ function translateElement(root) {
   }
 
   if (element.nodeType !== Node.ELEMENT_NODE) return;
-  if (shouldSkipElement(element)) return;
-
   translateAttributes(element);
   element.querySelectorAll?.("*").forEach((child) => {
-    if (!shouldSkipElement(child)) translateAttributes(child);
+    translateAttributes(child);
   });
+  if (shouldSkipElement(element)) return;
+  translateStructuredText(element);
 
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
@@ -1374,13 +1402,17 @@ function observeRuntimeText() {
 
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) translateElement(node);
+      if (mutation.type === "childList") for (const node of mutation.addedNodes) translateElement(node);
+      else translateElement(mutation.target);
     }
   });
 
   observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["placeholder", "title", "aria-label", "data-tooltip", "data-label", "alt"]
   });
 }
 
@@ -1457,19 +1489,25 @@ function isSinLikeActor(actor) {
 }
 
 function isDefaultSinDossierText(value, sinType, field) {
+  const original = field === "severeAttackDescription"
+    ? originalData.sins?.[sinType]?.severeAttack?.description
+    : originalData.sins?.[sinType]?.[field];
+  if (original !== undefined) return normalizeComparable(stripInlineHtml(value)) === normalizeComparable(stripInlineHtml(original));
   const marker = SIN_DOSSIER_DEFAULT_MARKERS[sinType]?.[field];
   if (!marker) return false;
   const comparable = normalizeComparable(value);
-  return Boolean(comparable && comparable.includes(normalizeComparable(marker)));
+  return Boolean(comparable && comparable.startsWith(normalizeComparable(marker)));
 }
 
 function shouldReplaceSinDossierField(value, sinType, field) {
+  if (field === "palace" && value === "default") return true;
   if (sinType === "centipede" && field === "pressure" && !normalizeText(value)) return true;
   return isDefaultSinDossierText(value, sinType, field);
 }
 
 function shouldReplaceSinBiography(biography, appearance, sinType) {
   if (isDefaultSinDossierText(biography, sinType, "appearance")) return true;
+  if (Object.values(SIN_DOSSIER_TRANSLATIONS).some((entry) => entry.appearance === biography)) return true;
   if (normalizeText(biography)) return false;
   return !normalizeText(appearance) || isDefaultSinDossierText(appearance, sinType, "appearance");
 }
@@ -1556,7 +1594,7 @@ function buildTranslatedAfflictions(current, sinType) {
   return changed ? next : null;
 }
 
-function buildTranslatedDomainData(domainData) {
+function buildTranslatedDomainData(domainData, sinType) {
   if (!domainData || typeof domainData !== "object") return null;
 
   let changed = false;
@@ -1580,7 +1618,13 @@ function buildTranslatedDomainData(domainData) {
       next[abilityKey].title = title;
       changed = true;
     }
-    if (ability.value !== value) {
+    const original = record.original?.fields?.["system.domainDescription"];
+    const originalDossier = originalData.sins?.[sinType]?.domains?.[abilityKey]?.value;
+    if (ability.value !== value && (
+      normalizeComparable(stripInlineHtml(ability.value)) === normalizeComparable(stripInlineHtml(original))
+      || normalizeComparable(stripInlineHtml(ability.value)) === normalizeComparable(stripInlineHtml(originalDossier))
+      || !ability.value
+    )) {
       next[abilityKey].value = value;
       changed = true;
     }
@@ -1598,14 +1642,16 @@ function buildSinDossierPatch(actor) {
 
   const system = actor.system ?? {};
   const patch = {};
+  const cleared = actor.flags?.[MODULE_ID]?.emptyDossierFields ?? [];
 
   for (const field of ["palace", "appearance", "pressure", "complications", "threats"]) {
+    if (cleared.includes(field) && system[field] === "") continue;
     if (translation[field] && shouldReplaceSinDossierField(system[field], sinType, field)) {
       setPatchValue(patch, `system.${field}`, system[field], translation[field]);
     }
   }
 
-  if (translation.appearance && shouldReplaceSinBiography(system.biography, system.appearance, sinType)) {
+  if (!cleared.includes("biography") && translation.appearance && shouldReplaceSinBiography(system.biography, system.appearance, sinType)) {
     setPatchValue(patch, "system.biography", system.biography, translation.appearance);
   }
 
@@ -1634,7 +1680,7 @@ function buildSinDossierPatch(actor) {
     }
   }
 
-  const domains = buildTranslatedDomainData(system.domains);
+  const domains = buildTranslatedDomainData(system.domains, sinType);
   if (domains) setPatchValue(patch, "system.domains", system.domains, domains);
 
   const afflictions = buildTranslatedAfflictions(system.afflictions, sinType);
@@ -1662,7 +1708,7 @@ async function applySinDossierTranslations(actor) {
 
   sinDossierTranslationsInFlight.add(key);
   try {
-    await actor.update(patch);
+    actor.updateSource(patch);
   } catch (error) {
     console.warn(`CAIN RU | Could not translate sin dossier for ${actor.name}`, error);
   } finally {
@@ -1682,6 +1728,8 @@ async function loadTranslationIndex() {
   if (translationState.loadPromise) return translationState.loadPromise;
 
   translationState.loadPromise = (async () => {
+    const originals = await fetch(`modules/${MODULE_ID}/data/originals.json`);
+    if (originals.ok) originalData = await originals.json();
     for (const fileName of TRANSLATION_PACK_FILES) {
       const response = await fetch(`modules/${MODULE_ID}/compendium/cain/${fileName}`);
       if (!response.ok) {
@@ -1693,14 +1741,20 @@ async function loadTranslationIndex() {
       const data = await response.json();
       const mapping = data.mapping ?? {};
       const packMap = new Map();
+      for (const [name, translated] of Object.entries(data.folders ?? {})) translationState.folders.set(normalizeLookup(name), translated);
 
       for (const [originalName, entry] of Object.entries(data.entries ?? {})) {
         if (!entry || typeof entry !== "object") continue;
-        const record = { packName, originalName, mapping, entry };
+        const record = { packName, originalName, mapping, entry, original: originalData.packs?.[packName]?.[originalName] };
         const originalKey = normalizeLookup(originalName);
         if (originalKey) {
           packMap.set(originalKey, record);
           addLookupRecord(translationState.byOriginalName, originalKey, record);
+        }
+        if (packName === "domains") for (const [alias, original] of Object.entries(DOMAIN_NAME_ALIASES)) {
+          if (normalizeLookup(original) !== originalKey) continue;
+          packMap.set(normalizeLookup(alias), record);
+          addLookupRecord(translationState.byOriginalName, normalizeLookup(alias), record);
         }
 
         for (const [entryKey, value] of Object.entries(entry)) {
@@ -1708,6 +1762,9 @@ async function loadTranslationIndex() {
           if (typeof value !== "string") continue;
           const translatedKey = normalizeLookup(value);
           addLookupRecord(translationState.byTranslatedName, translatedKey, record);
+        }
+        for (const [entryKey, value] of Object.entries(record.original?.previous ?? {})) {
+          if (TRANSLATED_LOOKUP_ENTRY_KEYS.has(entryKey) && typeof value === "string") addLookupRecord(translationState.byTranslatedName, normalizeLookup(value), record);
         }
       }
 
@@ -1746,12 +1803,24 @@ function scoreTranslationRecord(source, record) {
 function chooseTranslationRecord(source, records) {
   if (!records?.length) return null;
   return records
+    .filter((record) => !source.documentName || !record.original?.documentName || record.original.documentName === source.documentName)
     .map((record) => ({ record, score: scoreTranslationRecord(source, record) }))
     .sort((a, b) => b.score - a.score)[0]?.record ?? null;
 }
 
 function getTranslationRecordForData(source) {
   if (!translationState.loaded || !source) return null;
+  const originalName = source.flags?.[MODULE_ID]?.search?.originalName ?? source.flags?.babele?.originalName;
+  if (originalName) {
+    const record = chooseTranslationRecord(source, translationState.byOriginalName.get(normalizeLookup(originalName)));
+    if (record) return record;
+  }
+  const provenance = source._stats?.compendiumSource ?? source.flags?.core?.sourceId;
+  const match = provenance?.match(/^Compendium\.cain\.([^.]+)\.(?:Item\.)?([^.]+)$/);
+  if (match) {
+    const record = Array.from(translationState.byPackName.get(match[1])?.values() ?? []).find((candidate) => candidate.original?.id === match[2] || candidate.original?.variants?.some((variant) => variant.id === match[2]));
+    if (record) return record;
+  }
   for (const field of ITEM_LOOKUP_FIELDS) {
     const value = getByPath(source, field);
     const key = normalizeLookup(value);
@@ -1774,7 +1843,18 @@ function buildTranslationPatch(source) {
   setByPath(patch, `flags.${MODULE_ID}.search`, buildBilingualSearchData(source, record));
   for (const [entryKey, targetPath] of Object.entries(record.mapping)) {
     if (!Object.prototype.hasOwnProperty.call(record.entry, entryKey)) continue;
+    if (["pages", "results", "text"].includes(targetPath)) continue;
+    const current = getByPath(source, targetPath);
+    const original = record.original?.fields?.[targetPath];
+    const previous = source.flags?.[MODULE_ID]?.applied?.[entryKey];
+    const translated = record.entry[entryKey];
+    const matchesVariant = record.original?.variants?.some((variant) => !valuesDiffer(current, variant.fields[targetPath]));
+    // A matching item name alone is not permission to overwrite a player's changes.
+    const previousTranslation = record.original?.previous?.[entryKey];
+    if (current !== undefined && !matchesVariant && valuesDiffer(current, original) && valuesDiffer(current, previous) && valuesDiffer(current, previousTranslation) && valuesDiffer(current, translated)) continue;
     setByPath(patch, targetPath, record.entry[entryKey]);
+    patch.flags[MODULE_ID].applied ??= {};
+    patch.flags[MODULE_ID].applied[entryKey] = cloneValue(translated);
   }
   return hasKeys(patch) ? patch : null;
 }
@@ -1784,6 +1864,9 @@ function buildBilingualSearchData(source, record) {
   addSearchTerm(terms, source?.flags?.[MODULE_ID]?.search?.terms);
   addSearchTerm(terms, source?.flags?.[MODULE_ID]?.search?.originalName);
   addSearchTerm(terms, record.originalName);
+  if (record.packName === "domains") for (const [alias, original] of Object.entries(DOMAIN_NAME_ALIASES)) {
+    if (original === record.originalName) addSearchTerm(terms, alias);
+  }
 
   for (const field of BILINGUAL_SEARCH_FIELDS) addSearchTerm(terms, getByPath(source, field));
   for (const key of TRANSLATED_LOOKUP_ENTRY_KEYS) addSearchTerm(terms, record.entry?.[key]);
@@ -1796,11 +1879,42 @@ function buildBilingualSearchData(source, record) {
 }
 
 function applyTranslationToDocument(document) {
-  if (!document?.toObject || !document?.updateSource || document.documentName !== "Item") return false;
-  const patch = buildTranslationPatch(document.toObject());
+  if (!isRussian() || !document?.toObject || !document?.updateSource || !["Item", "RollTable", "JournalEntry"].includes(document.documentName)) return false;
+  const source = { ...document.toObject(), documentName: document.documentName };
+  const record = getTranslationRecordForData(source);
+  const patch = buildTranslationPatch(source);
   if (!patch) return false;
 
   try {
+    if (document.documentName === "RollTable") {
+      for (const result of document.results ?? []) {
+        const key = result.range?.join("-");
+        const translated = record.entry.results?.[key];
+        const original = record.original?.fields?.results?.find((entry) => entry._id === result.id);
+        const field = "description" in result ? "description" : "text";
+        const current = result[field];
+        const previous = result.flags?.[MODULE_ID]?.applied;
+        if (translated && [original?.[field], previous, record.original?.previous?.results?.[key], translated].includes(current)) result.updateSource({ [field]: translated, [`flags.${MODULE_ID}.applied`]: translated });
+      }
+    }
+    if (document.documentName === "JournalEntry") {
+      for (const page of document.pages ?? []) {
+        const original = record.original?.fields?.pages?.find((entry) => entry._id === page.id);
+        const translated = record.entry.pages?.[original?.name ?? page.name];
+        if (!translated) continue;
+        const pagePatch = {};
+        for (const [field, value] of [["name", translated.name], ["text.content", translated.text]]) {
+          const current = getByPath(page.toObject(), field);
+          const previous = page.flags?.[MODULE_ID]?.applied?.[field === "name" ? "name" : "content"];
+          const oldPage = record.original?.previous?.pages?.[original?.name ?? page.name];
+          if (value && [getByPath(original, field), previous, field === "name" ? oldPage?.name : oldPage?.text, value].includes(current)) {
+            setByPath(pagePatch, field, value);
+            setByPath(pagePatch, `flags.${MODULE_ID}.applied.${field === "name" ? "name" : "content"}`, value);
+          }
+        }
+        if (hasKeys(pagePatch)) page.updateSource(pagePatch);
+      }
+    }
     document.updateSource(patch);
     return true;
   } catch (error) {
@@ -1813,6 +1927,8 @@ function applyRuntimeItemTranslations() {
   if (!translationState.loaded) return;
 
   for (const item of game.items ?? []) applyTranslationToDocument(item);
+  for (const table of game.tables ?? []) applyTranslationToDocument(table);
+  for (const journal of game.journal ?? []) applyTranslationToDocument(journal);
   for (const actor of game.actors ?? []) {
     for (const item of actor.items ?? []) applyTranslationToDocument(item);
   }
@@ -2034,7 +2150,7 @@ function getCompendiumRowId(row) {
     ?? null;
 }
 
-function setCompendiumRowVisible(row, visible) {
+function setCompendiumRowVisible(row, visible, expandFolders = false) {
   row.hidden = false;
   row.classList.remove("hidden");
   row.style.display = visible ? "" : "none";
@@ -2045,13 +2161,21 @@ function setCompendiumRowVisible(row, visible) {
     folder.hidden = false;
     folder.classList.remove("hidden");
     folder.style.display = "";
+    if (expandFolders) {
+      folder.classList.add("expanded");
+      folder.classList.remove("collapsed");
+    }
     folder = folder.parentElement?.closest?.(".folder");
   }
 }
 
-function applyBilingualCompendiumFilter(root, pack, query) {
+function applyBilingualCompendiumFilter(root, pack, query, folderStates) {
   const normalizedQuery = normalizeLookup(query);
   if (!root || !pack) return;
+  if (!normalizedQuery) for (const [folder, state] of folderStates ?? []) {
+    folder.classList.toggle("expanded", state.expanded);
+    folder.classList.toggle("collapsed", state.collapsed);
+  }
 
   const entries = new Map(getPackIndexEntries(pack).map((entry) => [entry._id, entry]));
   const rows = root.querySelectorAll("[data-document-id], [data-entry-id], .directory-item, .compendium-item");
@@ -2064,7 +2188,7 @@ function applyBilingualCompendiumFilter(root, pack, query) {
 
     const terms = entry ? getSearchTermsForData(entry) : [normalizeLookup(row.textContent)];
     const visible = !normalizedQuery || terms.some((term) => term.includes(normalizedQuery));
-    setCompendiumRowVisible(row, visible);
+    setCompendiumRowVisible(row, visible, Boolean(normalizedQuery));
   }
 }
 
@@ -2079,10 +2203,24 @@ function installBilingualCompendiumSearch(app, html) {
 
   const searchInput = jqRoot.find("input[type='search'], input[name='search'], .directory-search input, .search input").first();
   if (!searchInput.length) return;
+  const folderStates = new Map(Array.from(root.querySelectorAll(".folder"), (folder) => [folder, {
+    expanded: folder.classList.contains("expanded"),
+    collapsed: folder.classList.contains("collapsed")
+  }]));
+  let wasSearching = false;
 
   const apply = () => {
     const query = searchInput.val() ?? "";
-    applyBilingualCompendiumFilter(root, pack, query);
+    const searching = Boolean(normalizeLookup(query));
+    if (searching && !wasSearching) {
+      folderStates.clear();
+      for (const folder of root.querySelectorAll(".folder")) folderStates.set(folder, {
+        expanded: folder.classList.contains("expanded"),
+        collapsed: folder.classList.contains("collapsed")
+      });
+    }
+    applyBilingualCompendiumFilter(root, pack, query, folderStates);
+    wasSearching = searching;
   };
 
   searchInput.off(".cainRuCompendiumSearch");
@@ -2099,32 +2237,119 @@ function installItemTranslationHooks() {
   if (itemTranslationHooksInstalled) return;
   itemTranslationHooksInstalled = true;
 
-  Hooks.on("preCreateItem", (document) => {
-    if (!isCain() || !getSetting(SETTINGS.compendia, true) || !translationState.loaded) return;
-    if (document.parent?.documentName === "Actor") applyTranslationToDocument(document);
-  });
-
-  Hooks.on("createItem", (document) => {
-    if (!isCain() || !getSetting(SETTINGS.compendia, true) || !translationState.loaded) return;
-    applyTranslationToDocument(document);
-  });
+  for (const type of ["Item", "RollTable", "JournalEntry"]) {
+    Hooks.on(`preCreate${type}`, (document) => {
+      if (!shouldTranslateCompendia() || !translationState.loaded) return;
+      applyTranslationToDocument(document);
+    });
+    Hooks.on(`create${type}`, (document) => {
+      if (!shouldTranslateCompendia() || !translationState.loaded) return;
+      applyTranslationToDocument(document);
+    });
+  }
 
   Hooks.on("renderActorSheet", (app, html) => {
-    if (!isCain() || !getSetting(SETTINGS.compendia, true)) return;
+    if (!shouldTranslateCompendia()) return;
     applyRuntimeActorTranslations(app.actor);
     installBilingualActorSearch(app, html);
   });
 
   Hooks.on("renderItemSheet", (app) => {
-    if (!isCain() || !getSetting(SETTINGS.compendia, true)) return;
+    if (!shouldTranslateCompendia()) return;
     applyTranslationToDocument(app.item);
   });
 
   Hooks.on("renderCompendium", async (app, html) => {
-    if (!isCain() || !getSetting(SETTINGS.compendia, true)) return;
+    if (!shouldTranslateCompendia()) return;
     const packLike = app.collection ?? app.document ?? app.pack;
     await patchCainCompendiumIndex(packLike);
     installBilingualCompendiumSearch(app, html);
+  });
+}
+
+function shouldTranslateCompendia() {
+  return isCain() && isRussian() && getSetting(SETTINGS.compendia, true);
+}
+
+const wrappedReaders = new WeakSet();
+
+function wrapReader(target, key, translate) {
+  const original = target?.[key];
+  if (typeof original !== "function" || wrappedReaders.has(original)) return;
+  const wrapped = async function (...args) {
+    const result = await original.apply(this, args);
+    if (shouldTranslateCompendia()) translate(result);
+    return result;
+  };
+  wrappedReaders.add(wrapped);
+  target[key] = wrapped;
+}
+
+async function installSheetDataTranslations() {
+  const [{ CainActorSheet }, { CainItemSheet }] = await Promise.all([
+    import("/systems/cain/module/sheets/actor-sheet.mjs"),
+    import("/systems/cain/module/sheets/item-sheet.mjs")
+  ]);
+  for (const Sheet of [CainActorSheet, CainItemSheet]) {
+    const original = Sheet.prototype.getData;
+    if (wrappedReaders.has(original)) continue;
+    const wrapped = async function (...args) {
+      if (shouldTranslateCompendia()) {
+        await loadTranslationIndex();
+        if (this.actor) applyRuntimeActorTranslations(this.actor);
+        if (this.item) applyTranslationToDocument(this.item);
+      }
+      if (this.actor) await applySinDossierTranslations(this.actor);
+      const data = await original.apply(this, args);
+      // The system's bond template asks for abilityName, absent in bondAbility's schema.
+      if (shouldTranslateCompendia() && Array.isArray(data.bondAbilities)) {
+        data.bondAbilities = data.bondAbilities.map((item) => ({ ...item.toObject(), system: { ...item.system, abilityName: item.name } }));
+      }
+      return data;
+    };
+    wrappedReaders.add(wrapped);
+    Sheet.prototype.getData = wrapped;
+  }
+}
+
+function installCompendiumReaders() {
+  for (const pack of game.packs ?? []) {
+    if (!isCainPack(pack)) continue;
+    wrapReader(pack, "getDocument", applyTranslationToDocument);
+    wrapReader(pack, "getDocuments", (documents) => documents?.forEach(applyTranslationToDocument));
+  }
+}
+
+function installSinCreationHooks() {
+  Hooks.on("preCreateActor", (actor, data) => {
+    if (!shouldTranslateRuntime() || !isSinLikeActor(actor)) return;
+    const defaults = originalData.sins?.[actor.system?.sinType];
+    if (defaults) {
+      const initial = {};
+      for (const field of ["palace", "appearance", "traumas", "pressure", "complications", "threats", "attackRoll", "severeAttack", "afflictions", "severeAbilityQuestions", "domains"]) {
+        if (defaults[field] !== undefined && (data?.system?.[field] === undefined || !actor.system[field] || ["default", ""].includes(actor.system[field]) || (field === "traumas" && actor.system[field]?.every((entry) => /^Question \d+$/.test(entry.question))))) {
+          setByPath(initial, `system.${field}`, defaults[field]);
+        }
+      }
+      actor.updateSource(initial);
+    }
+    const patch = buildSinDossierPatch(actor);
+    if (patch) actor.updateSource(patch);
+  });
+  Hooks.on("preUpdateActor", (actor, changes) => {
+    if (!shouldTranslateRuntime() || !isSinLikeActor(actor)) return;
+    const cleared = new Set(actor.flags?.[MODULE_ID]?.emptyDossierFields ?? []);
+    for (const field of ["biography", "pressure"]) {
+      const key = `system.${field}`;
+      if (!Object.hasOwn(changes, key) && !Object.hasOwn(changes.system ?? {}, field)) continue;
+      const value = Object.hasOwn(changes, key) ? changes[key] : changes.system[field];
+      if (value === "") cleared.add(field);
+      else cleared.delete(field);
+    }
+    setByPath(changes, `flags.${MODULE_ID}.emptyDossierFields`, Array.from(cleared));
+    const next = foundry.utils.mergeObject(actor.toObject(), changes, { inplace: false });
+    const patch = buildSinDossierPatch({ documentName: "Actor", type: actor.type, system: next.system, flags: next.flags });
+    if (patch) foundry.utils.mergeObject(changes, patch);
   });
 }
 
@@ -2141,7 +2366,7 @@ function registerSettings() {
 
   game.settings.register(MODULE_ID, SETTINGS.compendia, {
     name: "Переводить библиотеки CAIN",
-    hint: "Подключает переводы compendium packs через Babele. Требуется активный модуль Babele.",
+    hint: "Переводит библиотеки и предметы в листах персонажей. Поддерживает интеграцию с Babele.",
     scope: "world",
     config: true,
     default: true,
@@ -2163,7 +2388,19 @@ function registerSettings() {
 Hooks.once("init", () => {
   if (!isCain()) return;
   registerSettings();
+  installItemTranslationHooks();
+  installSinCreationHooks();
   void applyOwnI18nPriority();
+});
+
+Hooks.once("setup", async () => {
+  if (!isCain() || !isRussian()) return;
+  try {
+    await loadTranslationIndex();
+    await installSheetDataTranslations();
+  } catch (error) {
+    console.warn("CAIN RU | Could not prepare sheet translations", error);
+  }
 });
 
 Hooks.once("babele.init", (babele) => {
@@ -2176,7 +2413,7 @@ Hooks.once("babele.init", (babele) => {
 });
 
 Hooks.once("ready", async () => {
-  if (!isCain()) return;
+  if (!isCain() || !isRussian()) return;
 
   await applyOwnI18nPriority();
 
@@ -2188,15 +2425,12 @@ Hooks.once("ready", async () => {
     }
   }
 
-  if (getSetting(SETTINGS.compendia, true) && !game.modules.get("babele")?.active) {
-    ui.notifications?.info("CAIN RU: для перевода библиотек активируйте модуль Babele.");
-  }
-
   if (getSetting(SETTINGS.compendia, true)) {
     try {
       await loadTranslationIndex();
       applyRuntimeItemTranslations();
       installItemTranslationHooks();
+      installCompendiumReaders();
       await patchCainCompendiumIndexes();
     } catch (error) {
       console.warn("CAIN RU | Could not initialize runtime item translations", error);
@@ -2204,8 +2438,33 @@ Hooks.once("ready", async () => {
   }
 
   await applyRuntimeSinDossierTranslations();
+  installCatTextTranslations();
   observeRuntimeText();
 });
+
+function installCatTextTranslations() {
+  const original = window.formatCatText;
+  if (typeof original !== "function" || wrappedReaders.has(original)) return;
+  const wrapped = function (...args) {
+    const result = original.apply(this, args);
+    if (!shouldTranslateRuntime() || typeof result !== "string") return result;
+    const holder = document.createElement("div");
+    holder.innerHTML = result;
+    for (const span of holder.querySelectorAll("span[data-tooltip]")) {
+      if (!span.querySelector("img[src*='/assets/CAT/']")) continue;
+      const bold = span.querySelector("b");
+      if (bold) bold.textContent = translateText(bold.textContent);
+      span.dataset.tooltip = span.dataset.tooltip.split(" | ").map((step) => step
+        .replace(/^Base CAT:/, "Исходный CAT:")
+        .replace(/\(rounded up\)/g, "(округление вверх)")
+        .replace(/^Clamped to CAT (\d+) \(min 0, max 7\)$/, "Ограничено до CAT $1 (мин. 0, макс. 7)")
+        .replace(/^Result: (.+)$/, (_, value) => `Результат: ${translateText(value)}`)).join(" | ");
+    }
+    return holder.innerHTML;
+  };
+  wrappedReaders.add(wrapped);
+  window.formatCatText = wrapped;
+}
 
 for (const hook of [
   "renderApplication",
